@@ -24,7 +24,7 @@
 
 void process_midi_basic_noteon(uint8_t note)
 {
-    midi_send_noteon(&midi_device, 0, note, 128);
+    midi_send_noteon(&midi_device, 0, note, 127);
 }
 
 void process_midi_basic_noteoff(uint8_t note)
@@ -220,6 +220,26 @@ bool process_midi(uint16_t keycode, keyrecord_t *record)
             if (record->event.pressed && midi_config.modulation_interval > 0) {
                 midi_config.modulation_interval--;
                 dprintf("midi modulation interval %d\n", midi_config.modulation_interval);
+            }
+            return false;
+        case MI_BENDD:
+            if (record->event.pressed) {
+                midi_send_pitchbend(&midi_device, midi_config.channel, -0x2000);
+                dprintf("midi pitchbend channel:%d amount:%d\n", midi_config.channel, -0x2000);
+            }
+            else {
+                midi_send_pitchbend(&midi_device, midi_config.channel, 0);
+                dprintf("midi pitchbend channel:%d amount:%d\n", midi_config.channel, 0);
+            }
+            return false;
+        case MI_BENDU:
+            if (record->event.pressed) {
+                midi_send_pitchbend(&midi_device, midi_config.channel, 0x1fff);
+                dprintf("midi pitchbend channel:%d amount:%d\n", midi_config.channel, 0x1fff);
+            }
+            else {
+                midi_send_pitchbend(&midi_device, midi_config.channel, 0);
+                dprintf("midi pitchbend channel:%d amount:%d\n", midi_config.channel, 0);
             }
             return false;
     };
