@@ -13,10 +13,16 @@
 #define _RESET 3
 #define _SPCL 4
 
+enum custom_keycodes {
+  IKK_TEST = SAFE_RANGE,
+	IKK_WIN_MODE,
+	IKK_MAC_MODE
+};
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_DEFAULT] = { /* Qwerty base layer.*/
 		{ KC_ESC,   KC_1,    KC_2,      KC_3,    KC_4,    KC_5,    KC_TRNS,  KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS },
-        { KC_TAB,   KC_Q,    KC_W,      KC_E,    KC_R,    KC_T,    KC_TRNS,  KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_EQL  },
+    { KC_TAB,   KC_Q,    KC_W,      KC_E,    KC_R,    KC_T,    KC_TRNS,  KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_EQL  },
 		{ KC_LCTL,  KC_A,    KC_S,      KC_D,    KC_F,    KC_G,    KC_TRNS,  KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT },
 		{ KC_LSFT,  KC_Z,    KC_X,      KC_C,    KC_V,    KC_B,     KC_SPC,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT },
 		{ KC_LCTL,  KC_LGUI, MO(_SPCL), KC_LALT, MO(_NAV),KC_BSPC,  KC_ENT,  KC_SPC,  MO(_NAV),KC_MINS, KC_QUOT, KC_EQL,  KC_RCTL }
@@ -39,8 +45,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 },
 
 [_SPCL] = {
-		{ TO(_DEFAULT), TG(_MAC), KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS },
-		{ KC_TRNS,      KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_P7,   KC_P8,   KC_P9,   KC_PSLS, KC_TRNS },
+		{ TO(_DEFAULT), IKK_WIN_MODE, IKK_MAC_MODE, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, UC(8211) /* en-dash*/ },
+		{ KC_TRNS,      KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_P7,   KC_P8,   KC_P9,   KC_PSLS, UC(8212) /* em-dash*/ },
 		{ KC_TRNS,      KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_P4,   KC_P5,   KC_P6,   KC_PAST, KC_TRNS },
 		{ KC_TRNS,      KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS, KC_P1,   KC_P2,   KC_P3,   KC_PPLS, KC_TRNS },
 		{ MO(_RESET),   KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_PEQL,  KC_TRNS, KC_P0,   KC_TRNS, KC_PDOT, KC_PMNS, KC_TRNS }
@@ -83,11 +89,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
-
+// IKK: So to be honest, I don't know what this does. I think it's old stuff from TMK; I may be able to remove it.
 const uint16_t PROGMEM fn_actions[] = {
 
 };
 
+// IKK: This is an old way to define macros... which I'm not using in this layout. Should probably nix it. 
 const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
 {
 	// MACRODOWN only works in this function
@@ -103,3 +110,49 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
 	}
 	return MACRO_NONE;
 };
+
+void setWindowsMode(void) {
+	// This Unicode input mode requires setting a registry key:
+	// Key:   KEY_CURRENT_USER\Control Panel\Input Method\EnableHexNumpad
+	// Type:  REG_SZ
+	// Value: 1
+	set_unicode_input_mode(UC_WIN);
+	layer_off(_MAC);
+}
+
+void setMacMode(void) {
+	set_unicode_input_mode(UC_OSX);
+	layer_on(_MAC);
+}
+
+// This gets run at startup
+void matrix_init_user(void) {
+	setWindowsMode(); // Start off in Windows mode by default
+}
+
+// This should get run on each keypress.
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+    case IKK_TEST:
+      if (record->event.pressed) {
+				SEND_STRING(SS_TAP(X_T));
+				SEND_STRING(SS_TAP(X_E));
+				SEND_STRING("ST");
+      } else {
+        // NOP
+      }
+      return false; // Skip all further processing of this key
+		case IKK_WIN_MODE:
+			if (record->event.pressed) {
+				setWindowsMode();
+			}
+			return false;
+		case IKK_MAC_MODE:
+			if (record->event.pressed) { 
+				setMacMode();
+			}
+			return false;
+    default:
+      return true; // Process all other keycodes normally
+  }
+}
