@@ -7,8 +7,8 @@
 #define _DEFAULT 0
 #define _MAC 1
 #define _ALT 2
-#define _RESET 3
-#define _SPCL 4
+#define _SPCL 3
+#define _RESET 4
 
 enum custom_keycodes {
   WIN_MODE = SAFE_RANGE,
