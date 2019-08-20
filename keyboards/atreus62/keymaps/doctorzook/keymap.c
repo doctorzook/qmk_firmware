@@ -48,7 +48,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		{ XXXXXXX,      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, KC_P7,   KC_P8,   KC_P9,   KC_PAST, UC(_EMDASH) },
 		{ XXXXXXX,      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, KC_P4,   KC_P5,   KC_P6,   KC_PPLS, XXXXXXX },
 		{ XXXXXXX,      XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, KC_P1,   KC_P2,   KC_P3,   KC_PMNS, XXXXXXX },
-		{ MO(_RESET),   XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, KC_ENT,   KC_ENT,  KC_P0,   XXXXXXX, KC_PDOT, KC_PSLS, XXXXXXX }
+		{ MO(_RESET),   XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, KC_ENT,   KC_BSPC, KC_P0,   XXXXXXX, KC_PDOT, KC_PSLS, XXXXXXX }
 },
 
 [_RESET] = { /* To make flashing the keyboard easier, but not too easy to accidentally hit it. */
@@ -89,12 +89,12 @@ void setMacMode(void) {
 	layer_on(_MAC);
 }
 
-// This gets run at startup
+// This is run at startup.S
 void matrix_init_user(void) {
 	setWindowsMode();
 }
 
-// This should get run on each keypress.
+// This should be run on each keypress.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
 		case WIN_MODE:
